@@ -61,9 +61,9 @@ public class VagrantPoller implements IServerStatePoller2 {
 			if( up == expectedState ) {
 				setStateInternal(true, expectedState);
 			}
-			try {
-				Thread.sleep(100);
-			} catch(InterruptedException ie) {} // ignore
+//			try {
+//				Thread.sleep(100);
+//			} catch(InterruptedException ie) {} // ignore
 		}
 	}
 

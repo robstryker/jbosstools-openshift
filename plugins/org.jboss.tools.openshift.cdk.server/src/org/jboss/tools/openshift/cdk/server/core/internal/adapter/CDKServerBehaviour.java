@@ -9,11 +9,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.tm.internal.terminal.control.ITerminalViewControl;
 import org.eclipse.tm.internal.terminal.control.impl.ITerminalControlForText;
 import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
-import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
 import org.jboss.ide.eclipse.as.core.server.IServerStatePoller2;
 import org.jboss.ide.eclipse.as.core.server.internal.PollThread;
 import org.jboss.ide.eclipse.as.core.util.PollThreadUtils;
@@ -54,19 +54,31 @@ public class CDKServerBehaviour extends ControllableServerBehavior implements IC
 		}
 	}
 	
+	private void cancelPoller() {
+		// Server is in process of starting or stopping... 
+		Object pt = getSharedData(IDeployableServerBehaviorProperties.POLL_THREAD);
+		if( pt instanceof PollThread ) {
+			((PollThread) pt).cancel();
+		}
+	}
+	
 	
 	@Override
 	public void stop(boolean force) {
 		setServerStopping();
 		
-		boolean started = PollThreadUtils.isServerStarted(getServer(), new VagrantPoller()).isOK();
+		IStatus state = PollThreadUtils.isServerStarted(getServer(), new VagrantPoller());
+		boolean started = state.isOK();
+		boolean requiresCancelation = true;  // Bug in poller, assume always need to cancel existing startup
 		if( !started ) {
-			Object pt = getSharedData(IDeployableServerBehaviorProperties.POLL_THREAD);
-			if( pt instanceof PollThread ) {
-				((PollThread) pt).cancel();
+			if( state.getSeverity() == IStatus.ERROR ) {
+				// server is stopped, cancel the poller
+				cancelPoller();
+				setServerStopped();
+				return;
 			}
-			setServerStopped();
-			return;
+			// server is either starting or stopping, so cancel the transition
+			requiresCancelation = true;
 		}
 		
 		
@@ -104,6 +116,13 @@ public class CDKServerBehaviour extends ControllableServerBehavior implements IC
 		if( control[0] != null ) {
 			OutputStream os = control[0].getOutputStream();
 			try {
+				if( requiresCancelation ) {
+					os.write(new byte[]{3}); // Hitting ctrl+c in case the startup has stalled
+					try {
+						Thread.sleep(300); // delay since it requires 2 ctrl+c to cancel properly
+					} catch(InterruptedException ie) {}
+					os.write(new byte[]{3}); // Hitting ctrl+c in case the startup has stalled
+				}
 				os.write("\nvagrant halt\n".getBytes());
 				os.flush();
 				try {

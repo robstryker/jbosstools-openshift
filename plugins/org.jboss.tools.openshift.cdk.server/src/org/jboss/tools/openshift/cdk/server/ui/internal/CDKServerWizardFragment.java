@@ -39,8 +39,8 @@ public class CDKServerWizardFragment extends WizardFragment {
 		this.handle = handle;
 		Composite main = new Composite(parent, SWT.NONE);
 		main.setLayout(new FormLayout());
-		handle.setTitle("Vagrant Server Adapter");
-		handle.setDescription("A server adapter representing a Vagrantfile.");
+		handle.setTitle("CDK Server Adapter");
+		handle.setDescription("A server adapter representing a CDK installation folder containing a Vagrantfile.");
 		
 		Label l = new Label(main, SWT.NONE);
 		l.setText("Folder: ");

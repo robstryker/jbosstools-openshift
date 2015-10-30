@@ -106,5 +106,14 @@
             commandId="org.jboss.tools.openshift.cdk.server.ui.internal.launchCDKServer">
       </handler>
    </extension>
+   <extension
+         point="org.jboss.tools.runtime.core.runtimeDetectors">
+      <runtimeDetector
+            class="org.jboss.tools.openshift.cdk.server.core.internal.detection.CDKRuntimeDetector"
+            enabled="true"
+            id="org.jboss.tools.openshift.cdk.server.core.internal.detection.CDKRuntimeDetector"
+            name="CDK">
+      </runtimeDetector>
+   </extension>
    
 </plugin>

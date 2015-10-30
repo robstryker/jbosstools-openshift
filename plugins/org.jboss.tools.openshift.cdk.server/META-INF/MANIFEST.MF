@@ -21,8 +21,10 @@ Require-Bundle: org.jboss.tools.usage;bundle-version="2.1.0",
  org.eclipse.ui.forms;bundle-version="3.6.200",
  org.jboss.ide.eclipse.as.wtp.ui;bundle-version="3.1.1",
  org.eclipse.tm.terminal.view.core;bundle-version="4.0.0",
- org.eclipse.tm.terminal.view.ui;bundle-version="4.1.0",
- org.eclipse.tm.terminal.connector.local;bundle-version="4.1.0",
- org.eclipse.tm.terminal.control;bundle-version="4.0.0"
+ org.eclipse.tm.terminal.view.ui;bundle-version="4.0.0",
+ org.eclipse.tm.terminal.connector.local;bundle-version="4.0.0",
+ org.eclipse.tm.terminal.control;bundle-version="4.0.0",
+ org.jboss.tools.runtime.core;bundle-version="3.1.0",
+ org.jboss.tools.runtime.ui;bundle-version="3.1.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

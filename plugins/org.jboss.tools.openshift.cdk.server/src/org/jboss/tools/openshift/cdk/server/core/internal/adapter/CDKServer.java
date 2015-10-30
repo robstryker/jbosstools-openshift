@@ -9,6 +9,7 @@ import org.eclipse.wst.server.core.model.ServerDelegate;
 
 public class CDKServer extends ServerDelegate {
 
+	public static final String CDK_SERVER_TYPE = "org.jboss.tools.openshift.cdk.server.type";
 	public static final String PROP_FOLDER = "org.jboss.tools.openshift.cdk.server.core.internal.adapter.FOLDER";
 	
 	

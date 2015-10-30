@@ -54,14 +54,14 @@ public class LocationSection extends ServerEditorSection {
 		
 		FormToolkit toolkit = new FormToolkit(parent.getDisplay());
 		Section section = toolkit.createSection(parent, ExpandableComposite.TWISTIE|ExpandableComposite.TITLE_BAR);
-		section.setText("Vagrantfile Location");
+		section.setText("CDK Details");
 		section.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL));
 		
 		Composite composite = toolkit.createComposite(section);
 		composite.setLayout(new FormLayout());
 
 		
-		Label l = toolkit.createLabel(composite, "Vagrant Location: ");
+		Label l = toolkit.createLabel(composite, "Vagrantfile Location: ");
 		location = toolkit.createText(composite, "");
 		browse = toolkit.createButton(composite, "Browse...", SWT.PUSH);
 		
@@ -139,7 +139,7 @@ public class LocationSection extends ServerEditorSection {
 	
 	public class SetLocationPropertyCommand extends org.jboss.ide.eclipse.as.wtp.ui.editor.ServerWorkingCopyPropertyTextCommand {
 		public SetLocationPropertyCommand(IServerWorkingCopy server) {
-			super(server, "Modify Vagrant Location",  
+			super(server, "Modify Vagrantfile Location",  
 					location, location.getText(), CDKServer.PROP_FOLDER, locationListener);
 		}
 	}
