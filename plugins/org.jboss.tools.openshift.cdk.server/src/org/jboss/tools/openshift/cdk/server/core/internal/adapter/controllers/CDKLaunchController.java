@@ -74,10 +74,11 @@ public class CDKLaunchController extends AbstractSubsystemController implements 
 		// Override the credential map so changes to server editor password are passed through
 		int credentialType = cdkServer.getCredentialType();
 		if( credentialType == CDKServer.CREDENTIAL_OPTION_ENV_VAR) {
-			HashMap<String, String> env = new HashMap<String, String>();
-			env.put(CDKConstants.CDK_ENV_SUB_USERNAME, cdkServer.getUsername());
-			env.put(CDKConstants.CDK_ENV_SUB_PASSWORD, cdkServer.getPassword());
-			workingCopy.setAttribute(ENVIRONMENT_VARS_KEY, env);
+			Map<String, String> env = workingCopy.getAttribute(ENVIRONMENT_VARS_KEY, new HashMap<String,String>());
+			HashMap<String,String> cloned = new HashMap<String,String>(env);
+			cloned.put(CDKConstants.CDK_ENV_SUB_USERNAME, cdkServer.getUsername());
+			cloned.put(CDKConstants.CDK_ENV_SUB_PASSWORD, cdkServer.getPassword());
+			workingCopy.setAttribute(ENVIRONMENT_VARS_KEY, cloned);
 		}
 	}
 	
