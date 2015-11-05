@@ -8,14 +8,15 @@
  * Contributors: 
  * Red Hat, Inc. - initial API and implementation 
  ******************************************************************************/ 
-package org.jboss.tools.openshift.cdk.server.core.internal.adapter.runtime;
+package org.jboss.tools.openshift.cdk.server.core.internal;
 
-import org.eclipse.wst.server.core.model.RuntimeDelegate;
+import org.eclipse.wst.server.core.IServer;
 
-public class DummyServerRuntime extends RuntimeDelegate {
+// TODO - allow customization of this location
+public class CDKConstantUtility {
+	private static final String VAGRANT_LOCATION_LINUX = "/usr/bin/vagrant";
 
-	public DummyServerRuntime() {
-		// TODO Auto-generated constructor stub
+	public static String getVagrantLocation(IServer server) {
+		return VAGRANT_LOCATION_LINUX;
 	}
-
 }

@@ -1,3 +1,13 @@
+/******************************************************************************* 
+ * Copyright (c) 2015 Red Hat, Inc. 
+ * Distributed under license by Red Hat, Inc. All rights reserved. 
+ * This program is made available under the terms of the 
+ * Eclipse Public License v1.0 which accompanies this distribution, 
+ * and is available at http://www.eclipse.org/legal/epl-v10.html 
+ * 
+ * Contributors: 
+ * Red Hat, Inc. - initial API and implementation 
+ ******************************************************************************/ 
 package org.jboss.tools.openshift.cdk.server.core.internal.detection;
 
 import java.io.File;
@@ -10,6 +20,7 @@ import org.eclipse.wst.server.core.IServerType;
 import org.eclipse.wst.server.core.IServerWorkingCopy;
 import org.eclipse.wst.server.core.ServerCore;
 import org.jboss.ide.eclipse.as.core.util.ServerNamingUtility;
+import org.jboss.tools.openshift.cdk.server.core.internal.CDKConstants;
 import org.jboss.tools.openshift.cdk.server.core.internal.adapter.CDKServer;
 import org.jboss.tools.runtime.core.model.AbstractRuntimeDetectorDelegate;
 import org.jboss.tools.runtime.core.model.RuntimeDefinition;
@@ -61,8 +72,8 @@ public class CDKRuntimeDetector extends AbstractRuntimeDetectorDelegate{
 	}
 	
 	private boolean validate(File root) {
-		if( new File(root, "Vagrantfile").exists()) {
-			if( new File(root, ".cdk").exists()) {
+		if( new File(root, CDKConstants.CDK_RESOURCE_VAGRANTFILE).exists()) {
+			if( new File(root, CDKConstants.CDK_RESOURCE_DOTCDK).exists()) {
 				return true;
 			}
 		}

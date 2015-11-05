@@ -40,11 +40,11 @@
 	<extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            category="JBoss"
-            delegate="org.jboss.tools.openshift.cdk.server.core.internal.adapter.CDKLaunchConfig"
+            category="Red Hat"
+            delegate="org.jboss.ide.eclipse.as.wtp.core.server.launch.ControllableServerLaunchConfiguration"
             id="org.jboss.tools.openshift.cdk.server.core.internal.behaviour.launchType"
             modes="run"
-            name="Vagrant Server Startup Configuration"
+            name="Red Hat CDK Server Startup Configuration"
             public="true"
             sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
             sourcePathComputerId="org.eclipse.jst.server.generic.core.sourcePathComputer"/>
@@ -81,13 +81,19 @@
 
 
 
-      <extension
+   <extension
          point="org.eclipse.wst.server.ui.editorPageSections">
       <section
             class="org.jboss.tools.openshift.cdk.server.ui.internal.LocationSection"
             id="org.jboss.tools.openshift.cdk.server.ui.internal.LocationSection"
             insertionId="org.eclipse.wst.server.editor.overview.left"
             order="8"
+            typeIds="org.jboss.tools.openshift.cdk.server.type"/>
+      <section
+            class="org.jboss.tools.openshift.cdk.server.ui.internal.CDKCredentialSection"
+            id="org.jboss.tools.openshift.cdk.server.ui.internal.CDKCredentialSection"
+            insertionId="org.eclipse.wst.server.editor.overview.left"
+            order="9"
             typeIds="org.jboss.tools.openshift.cdk.server.type"/>
    </extension>
    
@@ -114,6 +120,35 @@
             id="org.jboss.tools.openshift.cdk.server.core.internal.detection.CDKRuntimeDetector"
             name="CDK">
       </runtimeDetector>
+   </extension>
+
+
+   <!-- Launch Controllers -->
+   <extension
+         point="org.jboss.ide.eclipse.as.wtp.core.serverSubsystem">
+      <subsystem
+            system="launch"
+            id="launch.cdk"
+            name="Launch the CDK Server"
+            class="org.jboss.tools.openshift.cdk.server.core.internal.adapter.controllers.CDKLaunchController">
+      </subsystem>
+      <subsystemMapping
+            id="launch.cdk"
+            mappedId="launch.cdk"
+            serverTypes="org.jboss.tools.openshift.cdk.server.type">
+      </subsystemMapping>
+
+      <subsystem
+            system="shutdown"
+            id="shutdown.cdk"
+            name="Shutdown the CDK Server"
+            class="org.jboss.tools.openshift.cdk.server.core.internal.adapter.controllers.CDKShutdownController">
+      </subsystem>
+      <subsystemMapping
+            id="shutdown.cdk"
+            mappedId="shutdown.cdk"
+            serverTypes="org.jboss.tools.openshift.cdk.server.type">
+      </subsystemMapping>
    </extension>
    
 </plugin>

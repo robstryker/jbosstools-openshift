@@ -1,3 +1,13 @@
+/******************************************************************************* 
+ * Copyright (c) 2015 Red Hat, Inc. 
+ * Distributed under license by Red Hat, Inc. All rights reserved. 
+ * This program is made available under the terms of the 
+ * Eclipse Public License v1.0 which accompanies this distribution, 
+ * and is available at http://www.eclipse.org/legal/epl-v10.html 
+ * 
+ * Contributors: 
+ * Red Hat, Inc. - initial API and implementation 
+ ******************************************************************************/ 
 package org.jboss.tools.openshift.cdk.server.ui.internal.util;
 
 import java.util.HashMap;
@@ -55,9 +65,11 @@ public class TerminalUtility {
 		Object data = props.get(ITerminalsConnectorConstants.PROP_DATA);
 		final ITerminalConnector connector = createTerminalConnector(props);
 		CTabItem item = ConsoleManager.getInstance().findConsole(id,  secondaryId, title, connector, data);
-		Object data22 = item.getData();
-		if( data22 instanceof ITerminalControlForText) {
-			return (ITerminalControlForText)data22;
+		if( item != null ) {
+			Object data22 = item.getData();
+			if( data22 instanceof ITerminalControlForText) {
+				return (ITerminalControlForText)data22;
+			}
 		}
 		return null;
 	}

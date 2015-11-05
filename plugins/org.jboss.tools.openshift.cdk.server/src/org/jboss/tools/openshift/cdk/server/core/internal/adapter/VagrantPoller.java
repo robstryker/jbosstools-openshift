@@ -1,3 +1,13 @@
+/******************************************************************************* 
+ * Copyright (c) 2015 Red Hat, Inc. 
+ * Distributed under license by Red Hat, Inc. All rights reserved. 
+ * This program is made available under the terms of the 
+ * Eclipse Public License v1.0 which accompanies this distribution, 
+ * and is available at http://www.eclipse.org/legal/epl-v10.html 
+ * 
+ * Contributors: 
+ * Red Hat, Inc. - initial API and implementation 
+ ******************************************************************************/ 
 package org.jboss.tools.openshift.cdk.server.core.internal.adapter;
 
 import java.io.BufferedReader;
@@ -9,14 +19,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.wst.server.core.IServer;
-import org.jboss.ide.eclipse.as.core.JBossServerCorePlugin;
 import org.jboss.ide.eclipse.as.core.server.IServerStatePoller2;
 import org.jboss.ide.eclipse.as.core.server.IServerStatePollerType;
+import org.jboss.tools.openshift.cdk.server.core.internal.CDKConstantUtility;
+import org.jboss.tools.openshift.cdk.server.core.internal.CDKConstants;
+import org.jboss.tools.openshift.cdk.server.core.internal.CDKCoreActivator;
 
 public class VagrantPoller implements IServerStatePoller2 {
 	private IServer server;
@@ -57,13 +71,15 @@ public class VagrantPoller implements IServerStatePoller2 {
 	private void pollerRun() {
 		setStateInternal(false, state);
 		while(aborted == null && !canceled && !done) {
-			boolean up = onePing(server);
-			if( up == expectedState ) {
+			int status = onePing(server);
+			boolean completeUp = ( status == IStatus.OK && expectedState);
+			boolean completeDown = (status == IStatus.ERROR && !expectedState);
+			if( completeUp || completeDown) {
 				setStateInternal(true, expectedState);
 			}
-//			try {
-//				Thread.sleep(100);
-//			} catch(InterruptedException ie) {} // ignore
+			try {
+				Thread.sleep(700);
+			} catch(InterruptedException ie) {} // ignore
 		}
 	}
 
@@ -94,12 +110,14 @@ public class VagrantPoller implements IServerStatePoller2 {
 
 
 	public IStatus getCurrentStateSynchronous(IServer server) {
-		boolean b = onePing(server);
+		int b = onePing(server);
 		Status s;
-		if( b ) {
-			s = new Status(IStatus.OK, JBossServerCorePlugin.PLUGIN_ID, "Vagrant Instance is Up");
+		if( b == IStatus.OK ) {
+			s = new Status(IStatus.OK, CDKCoreActivator.PLUGIN_ID, "Vagrant Instance is Up");
+		} else if( b == IStatus.ERROR){
+			s = new Status(IStatus.ERROR, CDKCoreActivator.PLUGIN_ID, "Vagrant Instance is shutoff");
 		} else {
-			s = new Status(IStatus.INFO, JBossServerCorePlugin.PLUGIN_ID, "Vagrant Instance is not up");
+			s = new Status(IStatus.INFO, CDKCoreActivator.PLUGIN_ID, "Vagrant Instance is indeterminate");
 		}
 		return s;
 	}
@@ -112,16 +130,27 @@ public class VagrantPoller implements IServerStatePoller2 {
 		throw  new PollingException("Working Directory not found: " + str);
 	}
 	
-	private boolean onePing(IServer server) {
+	private int onePing(IServer server) {
 	    try {
 	        String line;
 	    	Process p = null;
 	    	List<String> args = new ArrayList<String>();
-	    	String vagrantCmdLoc = "/usr/bin/vagrant";
+	    	String vagrantCmdLoc = CDKConstantUtility.getVagrantLocation(getServer());
 	    	args.add(vagrantCmdLoc);
-	    	args.add("status");
-	    	args.add("--machine-readable");
+	    	args.add(CDKConstants.VAGRANT_CMD_STATUS);
+	    	args.add(CDKConstants.VAGRANT_FLAG_MACHINE_READABLE);
+	    	
+
+	    	
 	    	ProcessBuilder pb = new ProcessBuilder(args);
+	    	Map<String, String> env = pb.environment();
+	    	CDKServer cdkServer = (CDKServer)server.loadAdapter(CDKServer.class, new NullProgressMonitor());
+			int type = (cdkServer == null ? -1 : cdkServer.getCredentialType());
+			if( type == CDKServer.CREDENTIAL_OPTION_ENV_VAR) {
+				env.put(CDKConstants.CDK_ENV_SUB_USERNAME, cdkServer.getUsername());
+				env.put(CDKConstants.CDK_ENV_SUB_PASSWORD, cdkServer.getPassword());
+			}
+	    	
 	    	try {
 		    	File fDir = getWorkingDirectory(server);
 		    	pb.directory(fDir);
@@ -135,8 +164,7 @@ public class VagrantPoller implements IServerStatePoller2 {
 	  	        input.close();
 	  	        
 	  	        // Evaluate the output
-	  	        boolean result = parseOutput(sb.toString());
-	  	        return result;
+	  	        return parseOutput(sb.toString());
 	    	} catch(PollingException pe) {
 	    		aborted = pe;
 	    	} catch(IOException ioe) {
@@ -147,17 +175,10 @@ public class VagrantPoller implements IServerStatePoller2 {
 	      catch (Exception err) {
 	        err.printStackTrace();
 	      }
-		return true;
+		return IStatus.INFO;
 	}
 	
-	private class VagrantStatus {
-		static final String PROVIDER_NAME = "provider-name";
-		static final String STATE = "state";
-		static final String STATE_HUMAN_SHORT = "state-human-short";
-		static final String STATE_HUMAN_LONG = "state-human-long";
-		
-		static final String STATE_RUNNING = "running";
-		static final String STATE_SHUTOFF = "shutoff";
+	private class VagrantStatus implements CDKConstants {
 		
 		private HashMap<String, String> kv;
 		private String id;
@@ -174,7 +195,7 @@ public class VagrantPoller implements IServerStatePoller2 {
 	}
 	
 	
-	private boolean parseOutput(String s) {
+	private int parseOutput(String s) {
 		HashMap<String, VagrantStatus> status = new HashMap<String, VagrantStatus>();
 		String[] byLine = s.split("\n");
 		for( int i = 0; i < byLine.length; i++ ) {
@@ -193,21 +214,41 @@ public class VagrantPoller implements IServerStatePoller2 {
 					vs.setProperty(k,v);
 				}
 			} else {
-				return false;
+				return IStatus.INFO;
 			}
 		}
 		
 		Collection<VagrantStatus> stats = status.values();
+		
+		if( allRunning(stats)) {
+			return IStatus.OK;
+		}
+		if( allStopped(stats)) {
+			return IStatus.ERROR;
+		}
+		return IStatus.INFO;
+	}
+	
+	private boolean allRunning(Collection<VagrantStatus> stats) {
 		Iterator<VagrantStatus> i = stats.iterator();
 		while(i.hasNext()) {
 			if( !VagrantStatus.STATE_RUNNING.equals(i.next().getState())) {
 				return false;
 			}
 		}
-		
 		return true;
 	}
-	
+
+	private boolean allStopped(Collection<VagrantStatus> stats) {
+		Iterator<VagrantStatus> i = stats.iterator();
+		while(i.hasNext()) {
+			if( !VagrantStatus.STATE_SHUTOFF.equals(i.next().getState())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 
 	@Override
 	public void provideCredentials(Properties credentials) {
