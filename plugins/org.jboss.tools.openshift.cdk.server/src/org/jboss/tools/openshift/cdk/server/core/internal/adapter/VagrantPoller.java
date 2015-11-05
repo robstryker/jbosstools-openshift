@@ -197,29 +197,32 @@ public class VagrantPoller implements IServerStatePoller2 {
 	
 	private int parseOutput(String s) {
 		HashMap<String, VagrantStatus> status = new HashMap<String, VagrantStatus>();
-		String[] byLine = s.split("\n");
-		for( int i = 0; i < byLine.length; i++ ) {
-			String[] csv = byLine[i].split(",");
-			String timestamp = csv[0];
-			String vmId = csv[1];
-			if( vmId != null && !vmId.isEmpty() ) {
-				VagrantStatus vs = status.get(vmId);
-				if( vs == null ) {
-					vs = new VagrantStatus(vmId);
-					status.put(vmId, vs);
+		if( !s.isEmpty()) {
+			String[] byLine = s.split("\n");
+			for( int i = 0; i < byLine.length; i++ ) {
+				String[] csv = byLine[i].split(",");
+				String timestamp = csv[0];
+				String vmId = csv[1];
+				if( vmId != null && !vmId.isEmpty() ) {
+					VagrantStatus vs = status.get(vmId);
+					if( vs == null ) {
+						vs = new VagrantStatus(vmId);
+						status.put(vmId, vs);
+					}
+					String k = csv[2];
+					String v = csv[3];
+					if( k != null ) {
+						vs.setProperty(k,v);
+					}
+				} else {
+					return IStatus.INFO;
 				}
-				String k = csv[2];
-				String v = csv[3];
-				if( k != null ) {
-					vs.setProperty(k,v);
-				}
-			} else {
-				return IStatus.INFO;
 			}
-		}
-		
+		}		
 		Collection<VagrantStatus> stats = status.values();
-		
+		if( stats.size() == 0 ) {
+			return IStatus.ERROR;
+		}
 		if( allRunning(stats)) {
 			return IStatus.OK;
 		}
