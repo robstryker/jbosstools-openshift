@@ -48,7 +48,7 @@ import org.jboss.tools.openshift.cdk.server.core.internal.adapter.VagrantPoller;
 import org.jboss.tools.openshift.cdk.server.ui.internal.util.TerminalUtility;
 
 public class CDKLaunchController extends AbstractSubsystemController implements ILaunchServerController, IExternalLaunchConstants {
-
+	private static final String FLAG_INITIALIZED = "org.jboss.tools.openshift.cdk.server.core.internal.adapter.controllers.launch.isInitialized";
 	
 	@Override
 	public IStatus canStart(String launchMode) {
@@ -58,6 +58,48 @@ public class CDKLaunchController extends AbstractSubsystemController implements 
 	@Override
 	public void setupLaunchConfiguration(ILaunchConfigurationWorkingCopy workingCopy, IProgressMonitor monitor)
 			throws CoreException {
+		if( !isInitialized(workingCopy)) {
+			initialize(workingCopy);
+		}
+		performOverrides(workingCopy);
+	}
+	
+	private void performOverrides(ILaunchConfigurationWorkingCopy workingCopy) throws CoreException {
+		// Overrides, things that should always match whats in server editor
+		final IServer s = ServerUtil.getServer(workingCopy);
+		final CDKServer cdkServer = (CDKServer)s.loadAdapter(CDKServer.class, new NullProgressMonitor());
+		String workingDir = s.getAttribute(CDKServer.PROP_FOLDER, (String)null);
+		workingCopy.setAttribute(ATTR_WORKING_DIR, workingDir);
+		
+		// Override the credential map so changes to server editor password are passed through
+		int credentialType = cdkServer.getCredentialType();
+		if( credentialType == CDKServer.CREDENTIAL_OPTION_ENV_VAR) {
+			HashMap<String, String> env = new HashMap<String, String>();
+			env.put(CDKConstants.CDK_ENV_SUB_USERNAME, cdkServer.getUsername());
+			env.put(CDKConstants.CDK_ENV_SUB_PASSWORD, cdkServer.getPassword());
+			workingCopy.setAttribute(ENVIRONMENT_VARS_KEY, env);
+		}
+	}
+	
+	private void initialize(ILaunchConfigurationWorkingCopy wc) throws CoreException {
+		final IServer s = ServerUtil.getServer(wc);
+		final CDKServer cdkServer = (CDKServer)s.loadAdapter(CDKServer.class, new NullProgressMonitor());
+		wc.setAttribute(FLAG_INITIALIZED, true);
+		String workingDir = s.getAttribute(CDKServer.PROP_FOLDER, (String)null);
+		wc.setAttribute(ATTR_WORKING_DIR, workingDir);
+		int credentialType = cdkServer.getCredentialType();
+		if( credentialType == CDKServer.CREDENTIAL_OPTION_ENV_VAR) {
+			HashMap<String, String> env = new HashMap<String, String>();
+			env.put(CDKConstants.CDK_ENV_SUB_USERNAME, cdkServer.getUsername());
+			env.put(CDKConstants.CDK_ENV_SUB_PASSWORD, cdkServer.getPassword());
+			wc.setAttribute(ENVIRONMENT_VARS_KEY, env);
+		}
+		wc.setAttribute(ATTR_LOCATION, CDKConstantUtility.getVagrantLocation(getServer()));
+		wc.setAttribute(ATTR_ARGS, CDKConstants.VAGRANT_CMD_UP + " " + CDKConstants.VAGRANT_FLAG_PROVISION);
+	}
+	
+	private boolean isInitialized(ILaunchConfigurationWorkingCopy wc) throws CoreException{
+		return wc.hasAttribute(FLAG_INITIALIZED) && wc.getAttribute(FLAG_INITIALIZED, (Boolean)false);
 	}
 
 	@Override
@@ -77,8 +119,6 @@ public class CDKLaunchController extends AbstractSubsystemController implements 
 	public void launchViaExternalTools(int credentialType, ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
 			throws CoreException {
 		final IServer s = ServerUtil.getServer(configuration);
-		final CDKServer cdkServer = (CDKServer)s.loadAdapter(CDKServer.class, new NullProgressMonitor());
-
 		ILaunchConfigurationWorkingCopy wc = findLaunchConfig(s);
 		if( wc == null ) {
 			// TODO something wrong?  
@@ -86,16 +126,10 @@ public class CDKLaunchController extends AbstractSubsystemController implements 
 			return;
 		}
 		
-		String workingDir = s.getAttribute(CDKServer.PROP_FOLDER, (String)null);
-		wc.setAttribute(ATTR_WORKING_DIR, workingDir);
-		if( credentialType == CDKServer.CREDENTIAL_OPTION_ENV_VAR) {
-			HashMap<String, String> env = new HashMap<String, String>();
-			env.put(CDKConstants.CDK_ENV_SUB_USERNAME, cdkServer.getUsername());
-			env.put(CDKConstants.CDK_ENV_SUB_PASSWORD, cdkServer.getPassword());
-			wc.setAttribute(ENVIRONMENT_VARS_KEY, env);
-		}
-		wc.setAttribute(ATTR_LOCATION, CDKConstantUtility.getVagrantLocation(getServer()));
-		wc.setAttribute(ATTR_ARGS, CDKConstants.VAGRANT_CMD_UP + " " + CDKConstants.VAGRANT_FLAG_PROVISION);
+		wc.setAttribute(ATTR_WORKING_DIR, configuration.getAttribute(ATTR_WORKING_DIR, (String)null));
+		wc.setAttribute(ENVIRONMENT_VARS_KEY, configuration.getAttribute(ENVIRONMENT_VARS_KEY, (Map<String,String>)null));
+		wc.setAttribute(ATTR_LOCATION, configuration.getAttribute(ATTR_LOCATION, (String)null));
+		wc.setAttribute(ATTR_ARGS, configuration.getAttribute(ATTR_ARGS, (String)null));
 		
 		ILaunch launch2 = wc.launch("run", monitor);
 		final IProcess[] processes = launch2.getProcesses();
