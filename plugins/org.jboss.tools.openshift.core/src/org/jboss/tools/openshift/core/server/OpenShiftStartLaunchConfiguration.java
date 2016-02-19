@@ -10,12 +10,21 @@
  *******************************************************************************/
 package org.jboss.tools.openshift.core.server;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.ServerUtil;
 
@@ -136,7 +145,19 @@ public class OpenShiftStartLaunchConfiguration
 		return -1;
 	}
 	
-	private void attachRemoteDebugger(IServer server, int localDebugPort) {
-		// TODO 
+	private void attachRemoteDebugger(IServer server, int localDebugPort) throws CoreException {
+		String REMOTE_JAVA = "org.eclipse.jdt.launching.remoteJavaApplication";
+		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+		ILaunchConfigurationType type = manager.getLaunchConfigurationType(REMOTE_JAVA);
+		ILaunchConfigurationWorkingCopy config = type.newInstance(null, server.getName());
+		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String)null);
+		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_ALLOW_TERMINATE, false); 		
+		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_CONNECTOR,  IJavaLaunchConfigurationConstants.ID_SOCKET_ATTACH_VM_CONNECTOR);
+
+		Map<String,String> attrMap = new HashMap<String,String>();
+		attrMap.put("port", Integer.toString(localDebugPort));
+		attrMap.put("hostname", "localhost");
+		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CONNECT_MAP, attrMap);
+		config.launch("run", new NullProgressMonitor());
 	}
 }
