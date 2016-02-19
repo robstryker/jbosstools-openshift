@@ -72,6 +72,7 @@ public class OpenShiftServerBehaviour extends ServerBehaviourDelegate {
 	@Override
 	public void stop(boolean force) {
 		// No stopping either
+		setServerState(IServer.STATE_STOPPED);
 	}
 	
 	
@@ -105,17 +106,35 @@ public class OpenShiftServerBehaviour extends ServerBehaviourDelegate {
 	
 	@Override
 	public IStatus canStart(String launchMode) {
-		return Status.CANCEL_STATUS;
+		return Status.OK_STATUS;
 	}
 	
 	@Override
 	public IStatus canRestart(String mode) {
-		return Status.CANCEL_STATUS;
+		return Status.OK_STATUS;
 	}
 
 	@Override
 	public IStatus canStop() {
-		return Status.CANCEL_STATUS;
+		return Status.OK_STATUS;
 	}	
+	
+	
+	public void setServerStarting() {
+		setServerState(IServer.STATE_STARTING);
+	}
+
+	public void setServerStarted() {
+		setServerState(IServer.STATE_STARTED);
+	}
+
+	public void setServerStopping() {
+		setServerState(IServer.STATE_STOPPING);
+	}
+	
+	public void setServerStopped() {
+		setServerState(IServer.STATE_STOPPED);
+	}
+
 	
 }

@@ -16,6 +16,8 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
+import org.eclipse.wst.server.core.IServer;
+import org.eclipse.wst.server.core.ServerUtil;
 
 /**
  * @author Andre Dietisheim
@@ -27,6 +29,114 @@ public class OpenShiftStartLaunchConfiguration
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) 
 			throws CoreException {
+		IServer server = ServerUtil.getServer(configuration);
+		OpenShiftServerBehaviour osb = (OpenShiftServerBehaviour)server.loadAdapter(OpenShiftServerBehaviour.class, null);
+		osb.setServerStarting();
+		if( "run".equals(mode)) {
+			int remotePort = getDebugPortFromConfig(server);
+			if( remotePort != -1 ) {
+				// TODO should we also cancel the existing remote deugger?  
+				// Code not stubbed for that... 
+				
+				
+				unmapPortForwarding(server, remotePort);
+				removeDebugPortFromDeploymentConfig(server);
+				waitForPodRestart(server);
+			}
+			osb.setServerStarted();
+		} else if( "debug".equals(mode)) {
+			if( remotePodIsJava(server)) {
+				int remotePort = getDebugPortFromConfig(server);
+				if( remotePort == -1 ) {
+					remotePort = addDebugPortToDeploymentConfig(server);
+					if( remotePort != -1 ) {
+						waitForPodRestart(server);
+						int localPort = mapPortForwarding(server, remotePort);
+						if( localPort != -1 ) {
+							attachRemoteDebugger(server, localPort);
+						} else {
+							// server was successfully launched in debug mode, but mapping of port forwarding failed (?)
+							// not sure if we should set to stopped here. 
+						}
+					} else {
+						// Was not able to set up a remote port
+						osb.setServerStopped();
+					}
+				}
+				osb.setServerStarted();
+			}
+		}
+	}
+	
+	private boolean remotePodIsJava(IServer server) {
+		// TODO
+		return true;
+	}
+	
+	/**
+	 * Read the debug port from the deployment config, or -1 if not found
+	 * @param server
+	 * @return
+	 */
+	private int getDebugPortFromConfig(IServer server) {
+		// TODO
+		return -1;
 	}
 
+	/**
+	 * Unmap the port forwarding. 
+	 * @param server
+	 * @param port
+	 * @return true on success, false otherwise
+	 */
+	private boolean unmapPortForwarding(IServer server, int port) {
+		// TODO 
+		return true;
+	}
+	
+	/**
+	 * Remove the debug port section from the deployment configuration
+	 * @param server
+	 * @return
+	 */
+	private boolean removeDebugPortFromDeploymentConfig(IServer server) {
+		// TODO
+		return true;
+	}
+	
+	/**
+	 * Synchronous wait
+	 * @param server
+	 */
+	private void waitForPodRestart(IServer server) {
+		// TODO
+	}
+	
+	/**
+	 * Add a debug port to the deployment config. 
+	 * Return what port is designated as the debug port, or -1 if failed
+	 * @param server
+	 * @return
+	 */
+	private int addDebugPortToDeploymentConfig(IServer server) {
+		// TODO
+		return -1;
+	}
+	
+	
+	/**
+	 * Map the remote port to a local port. 
+	 * Return the local port in use, or -1 if failed
+	 * @param server
+	 * @param remotePort
+	 * @return
+	 */
+	private int mapPortForwarding(IServer server, int remotePort) {
+		// TODO
+		return -1;
+	}
+	
+	private void attachRemoteDebugger(IServer server, int localDebugPort) {
+		// TODO 
+	}
 }
