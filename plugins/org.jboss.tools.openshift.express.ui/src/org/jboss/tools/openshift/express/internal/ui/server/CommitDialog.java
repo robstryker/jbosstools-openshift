@@ -1299,7 +1299,7 @@ public class CommitDialog extends TitleAreaDialog {
 	}
 
 	private static int getProblemSeverity(Repository repository, String path) {
-		IFile file = ResourceUtil.getFileForLocation(repository, path);
+		IFile file = null;//ResourceUtil.getFileForLocation(repository, path);
 		if (file != null) {
 			try {
 				int severity = file.findMaxProblemSeverity(IMarker.PROBLEM, true, IResource.DEPTH_ONE);
@@ -1359,7 +1359,7 @@ public class CommitDialog extends TitleAreaDialog {
 	}
 
 	private IFile findFile(String path) {
-		return ResourceUtil.getFileForLocation(repository, path);
+		return null;// ResourceUtil.getFileForLocation(repository, path);
 	}
 }
 

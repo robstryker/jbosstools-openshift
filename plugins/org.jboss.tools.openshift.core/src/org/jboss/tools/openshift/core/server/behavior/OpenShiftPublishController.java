@@ -20,15 +20,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.wst.server.core.IModule;
 import org.eclipse.wst.server.core.IServer;
-import org.eclipse.wst.server.core.model.ModuleDelegate;
 import org.eclipse.wst.server.core.model.ServerBehaviourDelegate;
-import org.eclipse.wst.server.core.util.ProjectModule;
-import org.jboss.ide.eclipse.as.core.server.internal.v7.DeploymentMarkerUtils;
 import org.jboss.ide.eclipse.as.wtp.core.console.ServerConsoleModel;
 import org.jboss.ide.eclipse.as.wtp.core.server.behavior.IPublishController;
 import org.jboss.tools.as.core.server.controllable.subsystems.internal.StandardFileSystemPublishController;
@@ -38,7 +34,7 @@ import org.jboss.tools.openshift.common.core.utils.StringUtils;
 import org.jboss.tools.openshift.core.server.OpenShiftServerUtils;
 import org.jboss.tools.openshift.core.server.RSync;
 import org.jboss.tools.openshift.internal.core.OpenShiftCoreActivator;
-import org.jboss.tools.openshift.internal.core.preferences.OCBinary;
+import org.jboss.tools.openshift.internal.core.util.ServerRSyncUtil;
 
 import com.openshift.restclient.model.IService;
 
@@ -47,29 +43,8 @@ public class OpenShiftPublishController extends StandardFileSystemPublishControl
 	private RSync rsync = null;
 	
 	private RSync createRSync(IServer server, IProgressMonitor monitor) throws CoreException {
-		String location = OCBinary.getInstance().getLocation();
-		if( location == null ) {
-			throw new CoreException(OpenShiftCoreActivator.statusFactory().errorStatus(
-					"Binary for oc-tools could not be found. Please open the OpenShift 3 Preference Page and set the location of the oc binary."));
-		}
-		
-		
-		IService service = OpenShiftServerUtils.getService(server);
-		if (service == null) {
-			throw new CoreException(OpenShiftCoreActivator.statusFactory().errorStatus(
-					NLS.bind("Server {0} could not determine the service to publish to.", server.getName())));
-		}
-
-		String podPath = OpenShiftServerUtils.getPodPath(server);
-		if (StringUtils.isEmpty(podPath)) {
-			throw new CoreException(OpenShiftCoreActivator.statusFactory().errorStatus(
-					NLS.bind("Server {0} could not determine the destination directory to publish to.", server.getName())));
-		}
-		
-		return new RSync(service, podPath, server);
+		return new ServerRSyncUtil().createRSync(server, monitor);
 	}
-
-	
 	
 	public void publishStart(final IProgressMonitor monitor) 
 			throws CoreException {
