@@ -49,7 +49,7 @@ public class OpenShiftPublishController extends StandardFileSystemPublishControl
 							getServer().getName(), deployProject.getName())));
 		}
 		
-		final RSync rsync = OCBinaryOperation.createRSync(getServer());
+		final RSync rsync = OpenShiftServerUtils.createRSync(getServer());
 		final File localDeploymentDirectory = new File(getDeploymentOptions().getDeploymentsRootFolder(true));
 		final MultiStatus status = new MultiStatus(OpenShiftCoreActivator.PLUGIN_ID, 0, 
 				NLS.bind("Could not sync all pods to folder {0}", localDeploymentDirectory.getAbsolutePath()), null);
@@ -114,7 +114,7 @@ public class OpenShiftPublishController extends StandardFileSystemPublishControl
 
 	public void publishFinish(IProgressMonitor monitor) throws CoreException {
 		super.publishFinish(monitor);
-		final RSync rsync = OCBinaryOperation.createRSync(getServer());
+		final RSync rsync = OpenShiftServerUtils.createRSync(getServer());
 		final File deployFolder = new File(getDeploymentOptions().getDeploymentsRootFolder(true));
 		final IService service = OpenShiftServerUtils.getService(getServer());
 		final MultiStatus status = new MultiStatus(OpenShiftCoreActivator.PLUGIN_ID, 0,
