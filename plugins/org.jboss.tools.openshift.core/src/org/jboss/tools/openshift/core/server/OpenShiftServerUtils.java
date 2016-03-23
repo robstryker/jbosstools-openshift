@@ -372,7 +372,7 @@ public class OpenShiftServerUtils {
 		return new RSync(service, podPath, server);
 	}
 
-	private static String loadPodPath(IService service, IServer server) throws CoreException {
+	public static String loadPodPath(IService service, IServer server) throws CoreException {
 		Connection connection = getConnection(server);
 		return new PodPathProvider().loadPodPath(service, connection);
 	}
@@ -427,5 +427,9 @@ public class OpenShiftServerUtils {
 		}
 		IDeploymentConfig dc = connection.getResource(ResourceKind.DEPLOYMENT_CONFIG, service.getNamespace(), dcName);
 		return dc;
+	}
+	
+	public static void setProjectAttribute(String name, String defaultValue, IProject project) {
+		ServerUtils.setProjectAttribute(name, defaultValue, SERVER_PROJECT_QUALIFIER, project, true);
 	}
 }
