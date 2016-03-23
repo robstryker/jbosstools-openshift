@@ -11,6 +11,7 @@
 package org.jboss.tools.openshift.internal.core.util;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -129,11 +130,12 @@ public class ResourceUtils {
 	 * @param pods
 	 * @return
 	 */
-	public static Collection<IPod> getPodsForService(IService service, Collection<IPod> pods) {
+	public static List<IPod> getPodsForService(IService service, Collection<IPod> pods) {
 		final Map<String, String> serviceSelector = service.getSelector();
 		return pods.stream()
 				.filter(p -> containsAll(serviceSelector, p.getLabels()))
-				.collect(Collectors.toSet());
+				.distinct()
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -165,6 +167,19 @@ public class ResourceUtils {
 	}
 	
 	/**
+	 * Returns all the images for the given build configs.
+	 * @param buildConfigs the build configs to extract the image refs from
+	 * @return all the image references within the given build configs
+	 * 
+	 * @see #imageRef(IBuildConfig)
+	 */
+	public static List<String> getImageRefs(List<IBuildConfig> buildConfigs) {
+		return buildConfigs.stream()
+				.map(bc -> imageRef(bc))
+				.collect(Collectors.toList());
+	}
+	
+	/**
 	 * The image reference for an image change trigger used to correlate a 
 	 * buildconfig to a deploymentconfig
 	 *  
@@ -182,7 +197,7 @@ public class ResourceUtils {
 		}
 		return "";
 	}
-	
+
 	/**
 	 * The image reference for an image change trigger used to correlate a 
 	 * build to a deploymentconfig
@@ -344,11 +359,14 @@ public class ResourceUtils {
 			.filter(project -> EGitUtils.isSharedWithGit(project))
 			.filter(project -> {
 					try {
-						return EGitUtils.getAllRemoteURIs(project)
-								.contains(new URIish(buildConfig.getSourceURI()));
+						if (buildConfig != null 
+								&& StringUtils.isEmpty(buildConfig.getSourceURI())) {
+							return EGitUtils.getAllRemoteURIs(project)
+									.contains(new URIish(buildConfig.getSourceURI()));
+						}
 					} catch (CoreException | URISyntaxException e) {
-						return false;
 					}
+					return false;
 				}
 	
 				)
