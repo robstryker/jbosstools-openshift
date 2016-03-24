@@ -12,7 +12,6 @@ package org.jboss.tools.openshift.core.server;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
@@ -78,16 +77,11 @@ public class OpenShiftServerUtils {
 
 	public static IServer findServerForService(String serviceName) {
 		final IServerType serverType = getServerType();
-		final Optional<IServer> match = Stream.of(ServerCore.getServers())
+		return Stream.of(ServerCore.getServers())
 				.filter(server -> server.getServerType()
 						.equals(serverType)
 						&& server.getAttribute(OpenShiftServerUtils.ATTR_SERVICE, "").equals(serviceName))
-				.findAny();
-		if (match.isPresent()) {
-			return match.get();
-		} else {
-			return null;
-		}
+				.findFirst().orElse(null);
 	}
 	
 	public static IServerType getServerType() {
@@ -107,7 +101,7 @@ public class OpenShiftServerUtils {
 		return ServerUtils.getServerName(baseName);
 	}
 
-	public static void updateServer(String serverName, String connectionUrl, IService service, String podPath, String sourcePath, IProject deployProject, String routeURL, IServerWorkingCopy server) {
+	public static void updateServer(String serverName, String connectionUrl, IService service, String sourcePath, String podPath, IProject deployProject, String routeURL, IServerWorkingCopy server) {
 		String deployProjectName = ProjectUtils.getName(deployProject);
 		String host = UrlUtils.getHost(routeURL);
 		updateServer(serverName, host, connectionUrl, deployProjectName, OpenShiftResourceUniqueId.get(service), sourcePath, podPath, routeURL, server);
@@ -203,19 +197,21 @@ public class OpenShiftServerUtils {
 		node.put(ATTR_CONNECTIONURL, connectionUrl);
 		node.put(ATTR_DEPLOYPROJECT, project.getName());
 		node.put(ATTR_SOURCE_PATH, sourcePath);
-		if (!StringUtils.isEmpty(podPath)) {
-			node.put(ATTR_POD_PATH, podPath);
-		}
 		node.put(ATTR_SERVICE, serviceId);
-		if(StringUtils.isEmpty(routeURL)) {
-			node.remove(ATTR_ROUTE);
-		} else {
-			node.put(ATTR_ROUTE, routeURL);
-		}
+		updateProjectNode(ATTR_POD_PATH, podPath, node);
+		updateProjectNode(ATTR_ROUTE, routeURL, node);
 
 		saveProject(node);
 	}
 
+	private static void updateProjectNode(String attribute, String value, IEclipsePreferences node) {
+		if (value != null) {
+			node.put(attribute, value);
+		} else {
+			node.remove(attribute);
+		}
+	}
+	
 	public static void updateServerProject(String attribute, String value, IProject project) throws CoreException {
 		if (!StringUtils.isEmpty(attribute)) {
 			throw new CoreException(OpenShiftCoreActivator.statusFactory().errorStatus(
@@ -282,23 +278,6 @@ public class OpenShiftServerUtils {
 				(IServerWorkingCopy) getServerType().createServer(name, null, null);
 		return serverWorkingCopy;
 	}
-	
-//	public static ConnectionURL getConnectionUrl(IServerAttributes attributes) {
-//		try {
-//			String connectionUrlString = getProjectAttribute(
-//					PROJECTATTR_CONNECTIONURL, null, getDeployProject(attributes));
-//			if (!StringUtils.isEmpty(connectionUrlString)) {
-//				return ConnectionURL.forURL(connectionUrlString);
-//			}
-//			
-//		} catch (UnsupportedEncodingException e) {
-//			OpenShiftCoreActivator.pluginLog().logError(NLS.bind("Could not get connection url for user {0}", attributes.getName()), e);
-//		} catch (MalformedURLException e) {
-//			OpenShiftCoreActivator.pluginLog().logError(NLS.bind("Could not get connection url for user {0}", attributes.getName()), e);
-//		}
-//
-//		return null;
-//	}
 
 	public static Connection getConnection(IServerAttributes attributes) {
 		try {
@@ -373,8 +352,7 @@ public class OpenShiftServerUtils {
 	}
 
 	public static String loadPodPath(IService service, IServer server) throws CoreException {
-		Connection connection = getConnection(server);
-		return new PodPathProvider().loadPodPath(service, connection);
+		return new PodDeploymentPathProvider().load(service, getConnection(server));
 	}
 
 	public static String getSourcePath(IServerAttributes attributes) {

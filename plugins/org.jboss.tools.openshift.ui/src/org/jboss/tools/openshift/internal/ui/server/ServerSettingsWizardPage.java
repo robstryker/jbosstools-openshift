@@ -451,7 +451,7 @@ public class ServerSettingsWizardPage extends AbstractOpenShiftWizardPage implem
 
 	private void createDeploymentControls(Composite container, ServerSettingsWizardPageModel model, DataBindingContext dbc) {
 		Button useInferredPodPathButton = new Button(container, SWT.CHECK);
-		useInferredPodPathButton.setText("&Use inferred Pod Path: ");
+		useInferredPodPathButton.setText("&Use inferred Pod Deployment Path");
 		GridDataFactory.fillDefaults()
 			.span(4,1).align(SWT.FILL, SWT.CENTER)
 			.applyTo(useInferredPodPathButton);

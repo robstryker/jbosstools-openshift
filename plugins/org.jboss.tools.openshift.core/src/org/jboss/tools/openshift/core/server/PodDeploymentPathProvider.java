@@ -36,7 +36,7 @@ import com.openshift.restclient.model.image.IImageStreamImport;
 /**
  * @author Andre Dietisheim
  */
-public class PodPathProvider {
+public class PodDeploymentPathProvider {
 
 	// default fallback
 	private static final String DEFAULT_DEPLOYMENT_DIR = "/opt/app-root/src";
@@ -51,7 +51,7 @@ public class PodPathProvider {
 
 	private static final String DOCKER_IMAGE_DIGEST_IDENTIFIER = "sha256:";
 
-	public String loadPodPath(IService service, Connection connection) throws CoreException {
+	public String load(IService service, Connection connection) throws CoreException {
 		IProject project = service.getProject();
 		IPod pod = getPod(service, project, connection);
 		String imageRef = getImageRef(connection, project, pod);
