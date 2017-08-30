@@ -11,6 +11,7 @@
 package org.jboss.tools.openshift.internal.ui.wizard.connection;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +21,10 @@ import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.ValidationStatusProvider;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.IObservable;
+import org.eclipse.core.databinding.observable.Realm;
+import org.eclipse.core.databinding.observable.list.IObservableList;
+import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
@@ -27,8 +32,10 @@ import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -155,6 +162,17 @@ public class AdvancedConnectionEditor extends BaseDetailsView implements IAdvanc
 					.converting(new TrimmingStringConverter())
 					.to(BeanProperties.value(AdvancedConnectionEditorModel.PROP_OC_OVERRIDE_LOCATION).observe(model))
 					.in(dbc);
+				
+				
+				overrideOCObservable.addValueChangeListener(new IValueChangeListener<Boolean>() {
+					@Override
+					public void handleValueChange(ValueChangeEvent<? extends Boolean> event) {
+						if( !overrideOCObservable.getValue()) {
+							ocLocationObservable.setValue(OpenShiftCorePreferences.INSTANCE.getOCBinaryLocation());
+						}
+					}
+				});
+				
 				ocLocationBinding.getValidationStatus().addValueChangeListener(new IValueChangeListener<IStatus>() {
 
 					@Override
@@ -195,6 +213,10 @@ public class AdvancedConnectionEditor extends BaseDetailsView implements IAdvanc
 					public void widgetSelected(SelectionEvent e) {
 						FileDialog fd = new FileDialog(ocBrowse.getShell());
 						fd.setText(ocText.getText());
+						IPath p = new Path(ocText.getText());
+						if( p.segmentCount() > 1 ) {
+							fd.setFilterPath(p.removeLastSegments(1).toOSString());
+						}
 						String result = fd.open();
 						if (result != null) {
 							ocLocationObservable.setValue(result);
@@ -209,6 +231,14 @@ public class AdvancedConnectionEditor extends BaseDetailsView implements IAdvanc
 					.in(dbc);
 				
 				ValidationStatusProvider ocValidator = new MultiValidator() {
+
+					public IObservableList getTargets() {
+						WritableList targets = new WritableList();
+						targets.add(ocLocationObservable);
+						targets.add(ocLocationValidity);
+						targets.add(ocVersionValidity);
+						return targets;
+					}
 					
 					@Override
 					protected IStatus validate() {
