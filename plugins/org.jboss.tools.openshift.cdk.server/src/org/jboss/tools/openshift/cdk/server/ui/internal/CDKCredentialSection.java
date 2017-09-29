@@ -36,6 +36,7 @@ import org.jboss.ide.eclipse.as.wtp.ui.editor.ServerWorkingCopyPropertyButtonCom
 import org.jboss.ide.eclipse.as.wtp.ui.editor.ServerWorkingCopyPropertyComboCommand;
 import org.jboss.ide.eclipse.as.wtp.ui.editor.ServerWorkingCopyPropertyCommand;
 import org.jboss.tools.foundation.core.credentials.CredentialService;
+import org.jboss.tools.foundation.core.credentials.ICredentialType;
 import org.jboss.tools.foundation.ui.credentials.ChooseCredentialComponent;
 import org.jboss.tools.foundation.ui.credentials.ICredentialCompositeListener;
 import org.jboss.tools.openshift.cdk.server.core.internal.adapter.CDKServer;
@@ -132,9 +133,11 @@ public class CDKCredentialSection extends ServerEditorSection {
 	
 	private ChooseCredentialComponent createChooseCredentialComponent(Composite parent) {
 		String initialUsername = server.getAttribute(CDKServer.PROP_USERNAME, (String)null);
+		ICredentialType[] arr = new ICredentialType[] {CredentialService.getCredentialModel().getDefaultCredentialType()};
 		final ChooseCredentialComponent comp = new ChooseCredentialComponent(
-				new String[]{CredentialService.REDHAT_ACCESS},
+				new String[]{CredentialService.REDHAT_ACCESS},arr,
 				initialUsername);
+		comp.setTypesVisible(false);
 		comp.create(parent);
 		return comp;
 	}

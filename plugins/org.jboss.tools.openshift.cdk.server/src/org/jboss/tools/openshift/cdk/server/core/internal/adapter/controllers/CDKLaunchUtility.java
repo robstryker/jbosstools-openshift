@@ -39,6 +39,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.wst.server.core.IServer;
 import org.jboss.ide.eclipse.as.core.JBossServerCorePlugin;
 import org.jboss.ide.eclipse.as.core.util.ArgsUtil;
+import org.jboss.tools.foundation.core.credentials.ICredentialResult;
 import org.jboss.tools.foundation.core.credentials.UsernameChangedException;
 import org.jboss.tools.openshift.cdk.server.core.internal.CDKCoreActivator;
 import org.jboss.tools.openshift.cdk.server.core.internal.MinishiftBinaryUtility;
@@ -73,7 +74,8 @@ public class CDKLaunchUtility {
 		try {
 			pass = cdkServer.getPassword();
 		} catch (UsernameChangedException uce) {
-			pass = uce.getPassword();
+			ICredentialResult cr = uce.getPassword(); 
+			pass = cr == null ? null : cr.stringValue();
 			user = uce.getUser();
 		}
 		return new String[] { user, pass };

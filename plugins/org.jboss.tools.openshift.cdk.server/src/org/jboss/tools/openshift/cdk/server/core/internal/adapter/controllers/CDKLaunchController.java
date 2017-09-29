@@ -40,6 +40,7 @@ import org.jboss.ide.eclipse.as.wtp.core.server.behavior.ControllableServerBehav
 import org.jboss.ide.eclipse.as.wtp.core.server.behavior.IControllableServerBehavior;
 import org.jboss.ide.eclipse.as.wtp.core.server.behavior.ILaunchServerController;
 import org.jboss.ide.eclipse.as.wtp.core.server.launch.AbstractStartJavaServerLaunchDelegate;
+import org.jboss.tools.foundation.core.credentials.ICredentialResult;
 import org.jboss.tools.foundation.core.credentials.UsernameChangedException;
 import org.jboss.tools.openshift.cdk.server.core.internal.CDKConstants;
 import org.jboss.tools.openshift.cdk.server.core.internal.CDKCoreActivator;
@@ -188,7 +189,8 @@ public class CDKLaunchController extends AbstractCDKLaunchController implements 
 		try {
 			pass = cdkServer.getPassword();
 		} catch(UsernameChangedException uce) {
-			pass = uce.getPassword();
+			ICredentialResult cr = uce.getPassword(); 
+			pass = cr == null ? null : cr.stringValue();
 			user = uce.getUser();
 		}
 		

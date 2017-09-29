@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.wst.server.core.IServer;
+import org.jboss.tools.foundation.core.credentials.ICredentialResult;
 import org.jboss.tools.foundation.core.credentials.UsernameChangedException;
 import org.jboss.tools.openshift.cdk.server.core.internal.CDKCoreActivator;
 import org.jboss.tools.openshift.cdk.server.core.internal.adapter.CDKServer;
@@ -33,7 +34,10 @@ public class CDKLaunchEnvironmentUtil {
 			try {
 				pass = cdkServer.getPassword();
 			} catch (UsernameChangedException uce) {
-				return createEnvironment(server, uce.getPassword(), uce.getUser());
+				ICredentialResult cr = uce.getPassword(); 
+				pass = cr == null ? null : cr.stringValue();
+				String user = uce.getUser();
+				return createEnvironment(server, pass, user);
 			}
 		}
 		return createEnvironment(server, pass);

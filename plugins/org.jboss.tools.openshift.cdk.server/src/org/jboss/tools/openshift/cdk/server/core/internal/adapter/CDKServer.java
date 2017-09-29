@@ -26,6 +26,7 @@ import org.jboss.ide.eclipse.as.core.util.ServerNamingUtility;
 import org.jboss.ide.eclipse.as.wtp.core.server.behavior.ControllableServerBehavior;
 import org.jboss.tools.foundation.core.credentials.CredentialService;
 import org.jboss.tools.foundation.core.credentials.ICredentialDomain;
+import org.jboss.tools.foundation.core.credentials.ICredentialResult;
 import org.jboss.tools.foundation.core.credentials.UsernameChangedException;
 import org.jboss.tools.openshift.cdk.server.core.internal.CDKConstants;
 import org.jboss.tools.openshift.cdk.server.core.internal.CDKCoreActivator;
@@ -120,7 +121,9 @@ public class CDKServer extends ServerDelegate {
 		String user = getUsername();
 		if( user != null && domain != null) {
 			try {
-				return domain.getCredentials(user);
+				ICredentialResult result = domain.getCredentials(user, 
+						CredentialService.getCredentialModel().getDefaultCredentialType());
+				return result.stringValue();
 			} catch(StorageException se) {
 				CDKCoreActivator.getDefault().getLog().log(new Status(IStatus.ERROR, CDKCoreActivator.PLUGIN_ID, se.getMessage(), se));
 			} catch(UsernameChangedException uce) {
