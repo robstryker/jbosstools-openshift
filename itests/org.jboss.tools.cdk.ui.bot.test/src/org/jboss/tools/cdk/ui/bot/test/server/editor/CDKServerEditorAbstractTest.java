@@ -36,6 +36,7 @@ import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.handler.EditorHandler;
 import org.eclipse.ui.IEditorPart;
 import org.jboss.tools.cdk.reddeer.core.condition.SystemJobIsRunning;
+import org.jboss.tools.cdk.reddeer.requirements.RemoveCDKServersRequirement;
 import org.jboss.tools.cdk.reddeer.server.exception.CDKServerException;
 import org.jboss.tools.cdk.reddeer.server.ui.editor.CDEServerEditor;
 import org.jboss.tools.cdk.reddeer.server.ui.editor.CDK3ServerEditor;
@@ -64,6 +65,7 @@ public abstract class CDKServerEditorAbstractTest extends CDKServerWizardAbstrac
 	@After
 	public void tearDown() {
 		cleanUp();
+		new RemoveCDKServersRequirement().runAfter();
 	}
 	
 	protected abstract void setupServerWizardPage(NewMenuWizard dialog);
@@ -86,7 +88,7 @@ public abstract class CDKServerEditorAbstractTest extends CDKServerWizardAbstrac
 	}
 
 	public void addCDKServer() {
-		NewCDKServerWizard dialog = (NewCDKServerWizard)CDKTestUtils.openNewServerWizardDialog();
+		NewCDKServerWizard dialog = CDKTestUtils.openNewServerWizardDialog();
 		
 		try {
 			setupServerWizardPage(dialog);
@@ -127,7 +129,7 @@ public abstract class CDKServerEditorAbstractTest extends CDKServerWizardAbstrac
 	 * @param editor
 	 *            IEditorPart to work with during saving
 	 */
-	private void performSave(final IEditorPart editor) {
+	protected void performSave(final IEditorPart editor) {
 		EditorHandler.getInstance().activate(editor);
 		Display.asyncExec(new Runnable() {
 

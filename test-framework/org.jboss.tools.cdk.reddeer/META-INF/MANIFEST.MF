@@ -18,4 +18,5 @@ Export-Package: org.jboss.tools.cdk.reddeer.core.condition,
  org.jboss.tools.cdk.reddeer.server.exception,
  org.jboss.tools.cdk.reddeer.server.ui,
  org.jboss.tools.cdk.reddeer.server.ui.editor,
+ org.jboss.tools.cdk.reddeer.server.ui.editor.launch.configuration,
  org.jboss.tools.cdk.reddeer.server.ui.wizard

@@ -8,23 +8,18 @@
  * Contributors: 
  * Red Hat, Inc. - initial API and implementation 
  ******************************************************************************/
-package org.jboss.tools.cdk.reddeer.server.ui.editor;
-
-import org.eclipse.reddeer.swt.impl.text.LabeledText;
+package org.jboss.tools.cdk.ui.bot.test.server.exception;
 
 /**
- * CKD 3.2+ server editor class
+ * Temporary assertion error class for JBIDE-25350
  * @author odockal
  *
  */
-public class CDK32ServerEditor extends CDK3ServerEditor {
+public class CustomAssertionErrorJBIDE25350 extends AssertionError {
 
-	public CDK32ServerEditor(String title) {
-		super(title);
-	}
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4068704562234485117L;
 
-	public LabeledText getMinishiftProfile() {
-		return new LabeledText(getCDKSection(), "Minishift Profile:");
-	}
-	
 }

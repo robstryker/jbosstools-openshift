@@ -52,10 +52,6 @@ import org.junit.After;
 @DisableSecureStorage
 @RemoveCDKServers
 public abstract class CDKServerWizardAbstractTest extends CDKAbstractTest {
-
-	protected static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-	
-	private static final String separator = System.getProperty("file.separator");
 	
 	// page description messages
 	
@@ -74,6 +70,8 @@ public abstract class CDKServerWizardAbstractTest extends CDKAbstractTest {
 	// possible dialog values passed by user
 	
 	protected static final String EXISTING_PATH = System.getProperty("user.dir");
+	
+	protected static final String MOCK_CDK320 = getProjectAbsolutePath("resources/cdk-files/" + FOLDER + "/cdk-3.2.0-mock" + (IS_WINDOWS ? ".bat" : ""));
 	
 	protected static final String NON_EXISTING_PATH = EXISTING_PATH + separator + "some_random_filename";
 	
