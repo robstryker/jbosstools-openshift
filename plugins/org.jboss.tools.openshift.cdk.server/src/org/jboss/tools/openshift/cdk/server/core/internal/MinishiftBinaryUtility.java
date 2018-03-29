@@ -27,6 +27,10 @@ public class MinishiftBinaryUtility {
 	// Seems weird?  See https://github.com/mitchellh/vagrant/issues/1652
 	private static final String MINISHIFT_LOCATION_WINDOWS = "C:\\minishift.exe";
 
+	public static final String MINISHIFT_CMD_NAME_LIN = "minishift";
+	public static final String MINISHIFT_CMD_NAME_WIN = "minishift.exe";
+	
+	
 	private static CommandLocationBinary binary;
 
 	public static String getMinishiftLocation() {
@@ -66,5 +70,12 @@ public class MinishiftBinaryUtility {
 			binary.setDefaultPlatform(Platform.OS_LINUX);
 		}
 		return binary.findLocation();
+	}
+	
+	public static String getMinishiftCommandName() {
+		if( Platform.getOS().equals(Platform.OS_WIN32)) {
+			return MINISHIFT_CMD_NAME_WIN;
+		}
+		return MINISHIFT_CMD_NAME_LIN;
 	}
 }

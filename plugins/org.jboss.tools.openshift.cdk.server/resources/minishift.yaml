@@ -25,12 +25,12 @@ licenses:
 availableRuntimes:
 
    ########################
-   #   MiniShift 1.14.0   #
+   #   Minishift 1.14.0   #
    ########################
 
  - &minishift1140
    id: minishift1140
-   name: MiniShift v1.14.0
+   name: Minishift v1.14.0
    version: 1.14.0
    license: *apache20
    url: https://github.com/minishift/minishift/releases

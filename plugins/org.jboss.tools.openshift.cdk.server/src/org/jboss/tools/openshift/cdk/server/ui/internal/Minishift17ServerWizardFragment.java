@@ -14,6 +14,7 @@ import java.io.File;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.wst.server.ui.wizard.IWizardHandle;
+import org.jboss.tools.openshift.cdk.server.core.internal.MinishiftBinaryUtility;
 import org.jboss.tools.openshift.cdk.server.core.internal.adapter.VersionUtil;
 import org.jboss.tools.openshift.cdk.server.core.internal.detection.MinishiftVersionLoader.MinishiftVersions;
 
@@ -44,7 +45,8 @@ public class Minishift17ServerWizardFragment extends CDK32ServerWizardFragment {
 	@Override
 	protected void handleDownloadedFile(String newHome) {
 		if( !homeText.isDisposed()) {
-			File f = new File(newHome, "minishift");
+			String cmdName = MinishiftBinaryUtility.getMinishiftCommandName();
+			File f = new File(newHome, cmdName);
 			f.setExecutable(true);
 			homeText.setText(f.getAbsolutePath());
 		}
